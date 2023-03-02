@@ -1,0 +1,64 @@
+<html>
+    <head><meta charset="utf-8"/></head>
+    <body>
+
+<div>
+    <h3>Wake-on-LAN packet sender</h3>
+
+The packet is sent through your browser and no information is sent to this server
+, however the URL with the parameters might be logged.
+
+Source code at <a
+    href="https://github.com/insomniacslk/wol">https://github.com/insomniacslk/wol</a> .
+<br />
+<textarea id="text" rows=5 placeholder="MAC address">
+</textarea>
+<br />
+<button id="send" onClick="sendWOL()">Send Wake-on-LAN</button>
+<br />
+<input id="permalink" type="text" size=60 disabled>
+<br />
+<img id="result" src="#" alt="Generated image">
+
+<script>
+
+function initialize() {
+    var params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+    if (params.text != null) {
+        document.getElementById('text').value = params.text;
+    }
+    sendWOL();
+}
+
+function getPermalink() {
+    var loc = new URL(window.location.href);
+    var params = new URLSearchParams(window.location.search);
+    params.set('text', document.getElementById('text').value);
+    loc.search = params.toString();
+    document.getElementById('permalink').value = loc;
+}
+
+var imageBytes;
+function sendWOL() {
+    var text = document.getElementById('text').value;
+    result = sendWOL(text);
+    document.getElementById('result').src = result;
+    getPermalink();
+}
+</script>
+
+<script src="wasm_exec.js"></script>
+<script>
+    const go = new Go();
+    WebAssembly.instantiateStreaming(fetch("wol.wasm"), go.importObject).then((result) => {
+        go.run(result.instance);
+        initialize();
+    });
+</script>
+
+</div>
+    </body>
+</html>
+
